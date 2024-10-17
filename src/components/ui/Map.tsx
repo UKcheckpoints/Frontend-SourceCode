@@ -47,7 +47,7 @@ const AutoZoom: React.FC<{ checkpoints: Checkpoint[] }> = ({ checkpoints }) => {
 
     useEffect(() => {
         if (map && checkpoints.length > 0) {
-            const bounds = L.latLngBounds(checkpoints.map(cp => cp?.position))
+            const bounds = L.latLngBounds(checkpoints.map((cp) => cp.position))
             map.fitBounds(bounds, { padding: [50, 50] })
         }
     }, [map, checkpoints])
@@ -57,14 +57,14 @@ const AutoZoom: React.FC<{ checkpoints: Checkpoint[] }> = ({ checkpoints }) => {
 
 const MapInteractionHandler: React.FC<{ onInteraction: () => void }> = ({ onInteraction }) => {
     useMapEvents({
-        drag: onInteraction,
-        zoom: onInteraction,
+        dragend: onInteraction,
+        zoomend: onInteraction,
         click: onInteraction,
     })
     return null
 }
 
-export default function Component() {
+export default function Map() {
     const [activeCheckpoint, setActiveCheckpoint] = useState<number | null>(null)
     const [isFirstLoad, setIsFirstLoad] = useState(true)
     const [showSignUp, setShowSignUp] = useState(false)
@@ -103,7 +103,7 @@ export default function Component() {
         }
     }, [isFirstLoad])
 
-    const activeCheckpointData = activeCheckpoint ? checkpoints.find(cp => cp.id === activeCheckpoint) : null
+    const activeCheckpointData = activeCheckpoint ? checkpoints.find((cp) => cp.id === activeCheckpoint) : null
 
     return (
         <div className="relative w-full h-[600px] rounded-lg overflow-hidden shadow-lg border-8 border-white">
