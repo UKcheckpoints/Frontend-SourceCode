@@ -133,8 +133,8 @@ export default function EnhancedChatbot() {
                                         <AvatarFallback><Bot className='dark:text-white rounded-full' /></AvatarFallback>
                                     </Avatar>
                                     <div>
-                                        <h3 className="font-semibold">AI Assistant</h3>
-                                        <p className="text-xs opacity-70">Always here to help</p>
+                                        <h3 className="font-semibold text-white">AI Assistant</h3>
+                                        <p className="text-xs opacity-70 text-white">Always here to help</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -206,7 +206,7 @@ export default function EnhancedChatbot() {
                             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                                 {file && (
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm text-muted-foreground dark:text-gray-400 truncate">{file.name}</span>
+                                        <span className="text-sm text-muted-foreground text-black dark:text-gray-400 truncate">{file.name}</span>
                                         <Button variant="ghost" size="sm" onClick={() => setFile(null)}>Remove</Button>
                                     </div>
                                 )}
