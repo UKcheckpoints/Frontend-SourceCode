@@ -224,7 +224,7 @@ export default function Hero() {
                             className="md:hidden"
                         >
                             <nav className="px-4 pt-2 pb-4 space-y-2">
-                                <a href="#" className="text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 transition-colors duration-200 flex items-center">
+                                <a href="https://api.whatsapp.com/message/OKFDNL6DPWH2D1?autoload=1&app_absent=0" className="text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 transition-colors duration-200 flex items-center">
                                     <Users className="h-5 w-5 mr-1" />
                                     Affiliate Program
                                 </a>
