@@ -86,22 +86,27 @@ interface FeatureProps {
     description: string
 }
 
-const Feature: React.FC<FeatureProps> = ({ icon, title, description }) => (
-    <motion.div
-        variants={itemVariants}
-        className="flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300"
-    >
+const Feature: React.FC<FeatureProps> = ({ icon, title, description }) => {
+    const [isHovered, setIsHovered] = useState(false)
+
+    return (
         <motion.div
-            className="text-sky-600 dark:text-sky-400 mb-4"
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.5 }}
+            variants={itemVariants}
+            className="flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300"
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
         >
-            {icon}
+            <motion.div
+                className="text-sky-600 dark:text-sky-400 mb-4"
+                animate={isHovered ? { y: [0, -10, 0], transition: { repeat: Infinity, duration: 1 } } : {}}
+            >
+                {icon}
+            </motion.div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-center">{description}</p>
         </motion.div>
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-300 text-center">{description}</p>
-    </motion.div>
-)
+    )
+}
 
 const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
@@ -131,6 +136,19 @@ const mapVariants: Variants = {
         transition: {
             duration: 0.8,
             ease: 'easeOut'
+        }
+    }
+}
+
+const floatingIconVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.5,
+            yoyo: Infinity,
+            ease: "easeInOut"
         }
     }
 }
@@ -175,20 +193,24 @@ export default function Hero() {
                         </a>
                     </nav>
                     <div className="flex items-center">
-                        <button
+                        <motion.button
                             onClick={toggleDarkMode}
                             className="p-2 rounded-full text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 focus:outline-none transition-colors duration-200"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             aria-label="Toggle dark mode"
                         >
                             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
                             onClick={toggleMenu}
                             className="ml-4 p-2 rounded-lg md:hidden text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 focus:outline-none transition-colors duration-200"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             aria-label="Toggle menu"
                         >
                             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                        </button>
+                        </motion.button>
                     </div>
                 </header>
 
@@ -215,7 +237,7 @@ export default function Hero() {
                     )}
                 </AnimatePresence>
 
-                <main className="container mx-auto px-4 py-16 text-center">
+                <main className="container mx-auto px-4 py-16 text-center relative">
                     <motion.div
                         ref={ref}
                         animate={controls}
@@ -229,7 +251,7 @@ export default function Hero() {
                             UKcheckpoints: Your trusted partner for efficient route planning and real-time checkpoint monitoring.
                         </motion.p>
                         <motion.div variants={itemVariants} className="flex justify-center space-x-4">
-                            <Button icon={<Truck className="h-5 w-5 hover:text-blue-500 hover:scale-110 transition-transform duration-200" />} variant="gradient">
+                            <Button icon={<Truck className="h-5 w-5" />} variant="gradient">
                                 Start Optimizing Now
                             </Button>
                         </motion.div>
@@ -239,9 +261,17 @@ export default function Hero() {
                         variants={mapVariants}
                         initial="hidden"
                         animate={controls}
-                        className="mt-16 rounded-lg overflow-hidden shadow-2xl"
+                        className="mt-16 rounded-lg overflow-hidden shadow-2xl relative"
                     >
                         <MapWithNoSSR />
+                        <motion.div
+                            className="absolute top-4 right-4"
+                            variants={floatingIconVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            <MapPin className="h-8 w-8 text-sky-600" />
+                        </motion.div>
                     </motion.div>
 
                     <motion.div
