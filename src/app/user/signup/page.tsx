@@ -204,7 +204,7 @@ export default function Signup() {
                                         terms and conditions
                                     </button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
+                                <DialogContent className="w-full max-w-[90vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-gray-800 dark:to-slate-800 p-4 sm:p-6 md:p-8 rounded-lg shadow-xl transition-all duration-300 ease-in-out">
                                     <DialogHeader>
                                         <DialogTitle className="text-xl font-bold text-gray-900">
                                             Terms and Conditions
