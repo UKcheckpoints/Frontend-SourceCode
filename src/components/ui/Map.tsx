@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Link from 'next/link'
 
 interface Checkpoint {
     id: number
@@ -200,10 +201,12 @@ export default function Map() {
                                         <span>Detailed checkpoint information</span>
                                     </div>
                                 </div>
-                                <Button className="w-full" size="lg">
-                                    <UserPlus className="mr-2" size={20} />
-                                    Sign Up Now
-                                </Button>
+                                <Link href={'/user/signin'}>
+                                    <Button className="w-full" size="lg">
+                                        <UserPlus className="mr-2" size={20} />
+                                        Sign Up Now
+                                    </Button>
+                                </Link>
                             </Card>
                         </motion.div>
                     )}
