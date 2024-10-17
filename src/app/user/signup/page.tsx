@@ -80,7 +80,7 @@ export default function Signup() {
             // Handle successful signup here
             console.log('Signup successful:', formData)
             router.push('/user/signin')
-        } catch (err) {
+        } catch {
             setError('An error occurred during signup. Please try again.')
         } finally {
             setIsLoading(false)

@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import dynamic from 'next/dynamic'
 import logoImage from '@/public/logo.jpg'
 
@@ -34,8 +33,6 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
-    const [showForgotUsername, setShowForgotUsername] = useState(false)
-    const [showForgotPassword, setShowForgotPassword] = useState(false)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target
@@ -60,21 +57,11 @@ export default function Login() {
             await new Promise(resolve => setTimeout(resolve, 2000))
             console.log('Logging in with:', formData)
             // Handle successful login here
-        } catch (err) {
+        } catch {
             setError('An error occurred during login. Please try again.')
         } finally {
             setIsLoading(false)
         }
-    }
-
-    const handleForgotUsername = async (email: string) => {
-        console.log('Sending username recovery to:', email)
-        setShowForgotUsername(false)
-    }
-
-    const handleForgotPassword = async (username: string) => {
-        console.log('Sending password reset to:', username)
-        setShowForgotPassword(false)
     }
 
     return (
@@ -112,7 +99,7 @@ export default function Login() {
                             </div>
                             <div className="text-right">
                                 <Link href={'/user/forgot-username'}>
-                                    <Button variant="link" className="text-xs font-sans" onClick={() => setShowForgotUsername(true)}>
+                                    <Button variant="link" className="text-xs font-sans">
                                         Forgot username?
                                     </Button>
                                 </Link>
@@ -188,7 +175,7 @@ export default function Login() {
                         </Button>
                     </form>
                     <p className="mt-4 text-center text-sm text-gray-600 font-inter">
-                        Don't have an account?{' '}
+                        Don&apos;t have an account?{' '}
                         <Link href="/user/signup" className="font-medium text-sky-600 hover:text-sky-500 font-sans">
                             Sign up here
                         </Link>

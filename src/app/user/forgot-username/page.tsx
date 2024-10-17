@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function ForgotUsername() {
     const [email, setEmail] = useState('')
@@ -105,7 +105,7 @@ export default function ForgotUsername() {
                     >
                         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                         <h3 className="text-xl font-bold text-gray-900 mb-2 font-sans">Username Sent!</h3>
-                        <p className="text-gray-600 mb-6 font-inter">We've sent your username to the email address provided.</p>
+                        <p className="text-gray-600 mb-6 font-inter">We&apos;ve sent your username to the email address provided.</p>
                         <Button asChild className="w-full bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-sans">
                             <Link href="/user/signin">Return to Login</Link>
                         </Button>
