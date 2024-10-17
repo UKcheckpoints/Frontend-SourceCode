@@ -8,6 +8,7 @@ import { useInView } from 'react-intersection-observer'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import logoImage from '@/public/logo.jpg'
+import Link from 'next/link'
 
 const MapWithNoSSR = dynamic(() => import('@/components/ui/Map'), {
     ssr: false,
@@ -224,11 +225,11 @@ export default function Hero() {
                             className="md:hidden"
                         >
                             <nav className="px-4 pt-2 pb-4 space-y-2">
-                                <a href="https://api.whatsapp.com/message/OKFDNL6DPWH2D1?autoload=1&app_absent=0" className="text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 transition-colors duration-200 flex items-center">
+                                <a href="#" className="text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 transition-colors duration-200 flex items-center">
                                     <Users className="h-5 w-5 mr-1" />
                                     Affiliate Program
                                 </a>
-                                <a href="#" className="text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 transition-colors duration-200 flex items-center">
+                                <a href="https://api.whatsapp.com/message/OKFDNL6DPWH2D1?autoload=1&app_absent=0" className="text-gray-600 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400 transition-colors duration-200 flex items-center">
                                     <FaWhatsapp className="h-5 w-5 mr-1" />
                                     WhatsApp
                                 </a>
@@ -251,9 +252,11 @@ export default function Hero() {
                             UKcheckpoints: Your trusted partner for efficient route planning and real-time checkpoint monitoring.
                         </motion.p>
                         <motion.div variants={itemVariants} className="flex justify-center space-x-4">
-                            <Button icon={<Truck className="h-5 w-5" />} variant="gradient">
-                                Start Optimizing Now
-                            </Button>
+                            <Link href={'/user/signin'}>
+                                <Button icon={<Truck className="h-5 w-5" />} variant="gradient">
+                                    Start Optimizing Now
+                                </Button>
+                            </Link>
                         </motion.div>
                     </motion.div>
 
