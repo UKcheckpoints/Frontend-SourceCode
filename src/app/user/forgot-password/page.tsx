@@ -106,7 +106,7 @@ export default function ForgotPassword() {
                     >
                         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                         <h3 className="text-xl font-bold text-gray-900 mb-2 font-sans">Password Reset Sent!</h3>
-                        <p className="text-gray-600 mb-6 font-inter">We've sent a password reset link to the email associated with your account.</p>
+                        <p className="text-gray-600 mb-6 font-inter">We&apos;ve sent a password reset link to the email associated with your account.</p>
                         <Button asChild className="w-full bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-sans">
                             <Link href="/user/signin">Return to Login</Link>
                         </Button>
