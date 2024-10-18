@@ -1,22 +1,24 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, Loader2, XCircle, Bell, MapPin, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog'
+import { useJwtValidation } from '../../../hooks/useJwtValidation'
 
 const termsItems = [
     "We require access to your location for accurate checkpoint information.",
     "We may send notifications for important updates and alerts.",
     "Your data will be handled in accordance with our privacy policy."
-];
+]
 
 type FormData = {
     username: string
@@ -40,6 +42,13 @@ export default function Signup() {
     const [error, setError] = useState<string | null>(null)
     const [showTerms, setShowTerms] = useState(false)
     const router = useRouter()
+    const { isLoading: isValidating, userData } = useJwtValidation()
+
+    useEffect(() => {
+        if (userData) {
+            router.push(userData.role === 'superadmin' || userData.role === 'admin' ? '/admin-dashboard' : '/dashboard')
+        }
+    }, [userData, router])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target
@@ -74,17 +83,33 @@ export default function Signup() {
         setIsLoading(true)
 
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/register`, {
+                username: formData.username,
+                email: formData.email,
+                password: formData.password
+            })
 
-            // Handle successful signup here
-            console.log('Signup successful:', formData)
-            router.push('/user/signin')
-        } catch {
-            setError('An error occurred during signup. Please try again.')
+            if (response.status === 201) {
+                console.log('Signup successful:', response.data)
+                router.push('/user/signin')
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                setError(error.response.data.message || 'An error occurred during signup. Please try again.')
+            } else {
+                setError('An unexpected error occurred. Please try again.')
+            }
         } finally {
             setIsLoading(false)
         }
+    }
+
+    if (isValidating) {
+        return (
+            <div className="min-h-screen w-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-sky-600" />
+            </div>
+        )
     }
 
     return (
@@ -100,7 +125,7 @@ export default function Signup() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="username" font="sans" className="text-sm font-medium text-gray-700">Username</Label>
+                        <Label htmlFor="username" className="text-sm font-medium text-gray-700">Username</Label>
                         <Input
                             id="username"
                             name="username"
@@ -110,12 +135,11 @@ export default function Signup() {
                             value={formData.username}
                             onChange={handleInputChange}
                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
-                            font="inter"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email" font="sans" className="text-sm font-medium text-gray-700">Email</Label>
+                        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
                         <Input
                             id="email"
                             name="email"
@@ -125,12 +149,11 @@ export default function Signup() {
                             value={formData.email}
                             onChange={handleInputChange}
                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
-                            font="inter"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password" font="sans" className="text-sm font-medium text-gray-700">Password</Label>
+                        <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
                         <div className="relative">
                             <Input
                                 id="password"
@@ -141,7 +164,6 @@ export default function Signup() {
                                 value={formData.password}
                                 onChange={handleInputChange}
                                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50 pr-10"
-                                font="inter"
                             />
                             <button
                                 type="button"
@@ -158,7 +180,7 @@ export default function Signup() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword" font="sans" className="text-sm font-medium text-gray-700">Confirm Password</Label>
+                        <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
                         <div className="relative">
                             <Input
                                 id="confirmPassword"
@@ -169,7 +191,6 @@ export default function Signup() {
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
                                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50 pr-10"
-                                font="inter"
                             />
                             <button
                                 type="button"
@@ -234,12 +255,12 @@ export default function Signup() {
                         </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 font-inter">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <MapPin className="h-4 w-4 text-sky-500" />
                         <span>Location permission required</span>
                     </div>
 
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 font-inter">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <Bell className="h-4 w-4 text-sky-500" />
                         <span>Notifications may be sent for updates</span>
                     </div>
@@ -254,7 +275,7 @@ export default function Signup() {
                             >
                                 <Alert variant="destructive" className="rounded-md bg-red-50 p-4">
                                     <XCircle className="h-5 w-5 text-red-400" />
-                                    <AlertDescription font="inter" className="ml-3 text-sm text-red-700">{error}</AlertDescription>
+                                    <AlertDescription className="ml-3 text-sm text-red-700">{error}</AlertDescription>
                                 </Alert>
                             </motion.div>
                         )}
@@ -267,7 +288,7 @@ export default function Signup() {
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                <Loader2 className="mr-2 h-5 w-5  animate-spin" />
                                 Signing Up...
                             </>
                         ) : (
@@ -277,9 +298,9 @@ export default function Signup() {
                 </form>
 
                 <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-600 font-inter">
+                    <p className="text-sm text-gray-600">
                         Already have an account?{' '}
-                        <Link href="/user/signin" className="font-medium text-sky-600 hover:text-sky-500 hover:underline focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 font-sans">
+                        <Link href="/user/signin" className="font-medium text-sky-600 hover:text-sky-500 hover:underline focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2">
                             Sign in here
                         </Link>
                     </p>

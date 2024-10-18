@@ -1,16 +1,19 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, Lock, User, Truck, Clock, MapPin, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import dynamic from 'next/dynamic'
+import { useJwtValidation } from '../../../hooks/useJwtValidation'
 import logoImage from '@/public/logo.jpg'
 
 const MapWithNoSSR = dynamic(() => import('@/components/ui/Map'), {
@@ -33,6 +36,14 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
+    const { isLoading: isValidating, userData } = useJwtValidation()
+
+    useEffect(() => {
+        if (userData) {
+            router.push(userData.role === 'superadmin' || userData.role === 'admin' ? '/admin-dashboard' : '/dashboard')
+        }
+    }, [userData, router])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target
@@ -47,21 +58,33 @@ export default function Login() {
         setError(null)
         setIsLoading(true)
 
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters long')
-            setIsLoading(false)
-            return
-        }
-
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            console.log('Logging in with:', formData)
-            // Handle successful login here
-        } catch {
-            setError('An error occurred during login. Please try again.')
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/login`, {
+                username: formData.username,
+                password: formData.password
+            }, { withCredentials: true })
+
+            if (response.status === 200) {
+                const { role } = response.data.token.userData
+                router.push(role.toLowerCase() === 'superadmin' || role.toLowerCase() === 'admin' ? '/admin-dashboard' : '/dashboard')
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                setError(error.response.data.message || 'An error occurred during login. Please try again.')
+            } else {
+                setError('An unexpected error occurred. Please try again.')
+            }
         } finally {
             setIsLoading(false)
         }
+    }
+
+    if (isValidating) {
+        return (
+            <div className="min-h-screen w-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-sky-600" />
+            </div>
+        )
     }
 
     return (
@@ -81,7 +104,7 @@ export default function Login() {
                     </div>
                     <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 mt-6 md:mt-8">
                         <div className="space-y-2">
-                            <Label htmlFor="username" font="sans">Username</Label>
+                            <Label htmlFor="username">Username</Label>
                             <div className="relative">
                                 <Input
                                     id="username"
@@ -93,20 +116,19 @@ export default function Login() {
                                     value={formData.username}
                                     onChange={handleInputChange}
                                     className="pl-10"
-                                    font="inter"
                                 />
                                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                             </div>
                             <div className="text-right">
                                 <Link href={'/user/forgot-username'}>
-                                    <Button variant="link" className="text-xs font-sans">
+                                    <Button variant="link" className="text-xs">
                                         Forgot username?
                                     </Button>
                                 </Link>
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password" font="sans">Password</Label>
+                            <Label htmlFor="password">Password</Label>
                             <div className="relative">
                                 <Input
                                     id="password"
@@ -118,7 +140,6 @@ export default function Login() {
                                     value={formData.password}
                                     onChange={handleInputChange}
                                     className="pl-10 pr-10"
-                                    font="inter"
                                 />
                                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                 <button
@@ -135,7 +156,7 @@ export default function Login() {
                             </div>
                             <div className="text-right">
                                 <Link href={'/user/forgot-password'}>
-                                    <Button variant="link" className="text-xs font-sans">
+                                    <Button variant="link" className="text-xs">
                                         Forgot password?
                                     </Button>
                                 </Link>
@@ -148,7 +169,7 @@ export default function Login() {
                                 checked={formData.rememberMe}
                                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, rememberMe: checked as boolean }))}
                             />
-                            <Label htmlFor="rememberMe" font="inter">Remember me</Label>
+                            <Label htmlFor="rememberMe">Remember me</Label>
                         </div>
                         <AnimatePresence>
                             {error && (
@@ -158,12 +179,12 @@ export default function Login() {
                                     exit={{ opacity: 0, y: -10 }}
                                 >
                                     <Alert variant="destructive">
-                                        <AlertDescription font="inter">{error}</AlertDescription>
+                                        <AlertDescription>{error}</AlertDescription>
                                     </Alert>
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        <Button type="submit" className="w-full bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-sans" disabled={isLoading}>
+                        <Button type="submit" className="w-full bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white" disabled={isLoading}>
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -174,9 +195,9 @@ export default function Login() {
                             )}
                         </Button>
                     </form>
-                    <p className="mt-4 text-center text-sm text-gray-600 font-inter">
+                    <p className="mt-4 text-center text-sm text-gray-600">
                         Don&apos;t have an account?{' '}
-                        <Link href="/user/signup" className="font-medium text-sky-600 hover:text-sky-500 font-sans">
+                        <Link href="/user/signup" className="font-medium text-sky-600 hover:text-sky-500">
                             Sign up here
                         </Link>
                     </p>
@@ -190,23 +211,23 @@ export default function Login() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <h2 className="text-xl font-bold mb-4 font-sans">Unlock Full Access</h2>
-                            <p className="mb-4 font-inter">Sign up now to access advanced features:</p>
+                            <h2 className="text-xl font-bold mb-4">Unlock Full Access</h2>
+                            <p className="mb-4">Sign up now to access advanced features:</p>
                             <ul className="space-y-2 mb-6">
                                 <motion.li className="flex items-center" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
                                     <Truck className="h-5 w-5 text-sky-600 mr-2" />
-                                    <span className="font-inter">Real-time vehicle tracking</span>
+                                    <span>Real-time vehicle tracking</span>
                                 </motion.li>
                                 <motion.li className="flex items-center" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 }}>
                                     <Clock className="h-5 w-5 text-sky-600 mr-2" />
-                                    <span className="font-inter">24/7 checkpoint updates</span>
+                                    <span>24/7 checkpoint updates</span>
                                 </motion.li>
                                 <motion.li className="flex items-center" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9 }}>
                                     <MapPin className="h-5 w-5 text-sky-600 mr-2" />
-                                    <span className="font-inter">Custom route planning</span>
+                                    <span>Custom route planning</span>
                                 </motion.li>
                             </ul>
-                            <Button className="w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-sans">Sign Up Now</Button>
+                            <Button className="w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white">Sign Up Now</Button>
                         </motion.div>
                     </div>
                 </div>
