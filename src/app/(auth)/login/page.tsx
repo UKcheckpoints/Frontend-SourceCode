@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/Label"
 import Link from 'next/link'
 import { ForgotPasswordData, FormData } from '@/types/Auth'
 import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
-import LoadingScreen from '@/components/layout/TruckLoader'
+import UserLoadingScreen from '@/components/layout/Loader'
+import axios from 'axios';
 
 export default function LoginPage() {
     const [IsLoading, setIsLoading] = useState(false)
@@ -24,22 +25,43 @@ export default function LoginPage() {
     const { isLoadingState } = useJwtValidator();
 
     if (isLoadingState) {
-        return <LoadingScreen status="preparing" />
+        return <UserLoadingScreen />
     }
 
     const onSubmit = async (data: FormData) => {
-        setIsLoading(true)
-        setLoginError(null)
+        setIsLoading(true);
+        setLoginError(null);
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            console.log(data)
-        } catch {
-            setLoginError("An error occurred. Please try again.")
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/login`, {
+                username: data.username,
+                password: data.password
+            });
+
+            if (response.status === 200) {
+                const { token } = response.data;
+                console.log('Login successful', token);
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    if (error.response.status === 422) {
+                        setLoginError("Missing required fields. Please provide both username and password.");
+                    } else if (error.response.status === 401) {
+                        setLoginError("Invalid username or password.");
+                    } else {
+                        setLoginError("An unexpected error occurred. Please try again.");
+                    }
+                } else {
+                    setLoginError("Network error. Please check your internet connection.");
+                }
+            } else {
+                setLoginError("An unexpected error occurred. Please try again.");
+            }
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
     const onForgotPasswordSubmit = async (_data: ForgotPasswordData) => {
         setForgotPasswordStatus('loading')

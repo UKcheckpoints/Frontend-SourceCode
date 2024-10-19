@@ -10,14 +10,14 @@ import logoImage from '@/assets/logo.jpg'
 import Image from 'next/image'
 import Chatbot from '@/components/layout/ChatBot'
 import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
-import LoadingScreen from '@/components/layout/TruckLoader'
+import UserLoadingScreen from '@/components/layout/Loader'
 
 export default function Component() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { isLoadingState } = useJwtValidator();
 
   if (isLoadingState) {
-    return <LoadingScreen status="preparing" />
+    return <UserLoadingScreen />
   }
 
   return (
