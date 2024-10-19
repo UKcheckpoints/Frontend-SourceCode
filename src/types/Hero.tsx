@@ -10,3 +10,4 @@ export type QuickAction = {
     title: string
     description: string
 }
+

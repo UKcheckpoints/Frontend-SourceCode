@@ -6,6 +6,8 @@ import { Users, MapPin, Menu, X, LogOut, ChevronLeft } from 'lucide-react'
 import { Button } from "@/components/ui/Button"
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery"
 import { cn } from "@/lib/utils/cn"
+import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
+import LoadingScreen from '@/components/layout/TruckLoader'
 
 interface NavButtonProps {
     icon: React.ComponentType<{ className?: string }>
@@ -18,6 +20,12 @@ export default function AdminDashboard() {
     const [activeSection, setActiveSection] = useState('users')
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const isMobile = useMediaQuery("(max-width: 768px)")
+
+    const { isLoadingState } = useJwtValidator();
+
+    if (isLoadingState) {
+        return <LoadingScreen status="ready" />
+    }
 
     const NavButton: React.FC<NavButtonProps> = ({ icon: Icon, label, section, collapsed }) => (
         <Button
