@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     url: "https://ukcheckpoint.info",
     images: [
       {
-        url: "/images/your-image.jpg",
+        url: "/assets/logo.jpg",
         width: 800,
         height: 600,
         alt: "UKcheckpoints App Screenshot",

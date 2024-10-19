@@ -1,13 +1,14 @@
 "use client"
 
 import React, { useState } from 'react'
-import { MapIcon, MenuIcon } from 'lucide-react'
+import { MenuIcon } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/Button"
 import Link from 'next/link'
 import { features, navItems, quickActions } from '@/constants/layout/Hero'
 import logoImage from '@/assets/logo.jpg'
 import Image from 'next/image'
+import Chatbot from '@/components/layout/ChatBot'
 
 export default function Component() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -79,12 +80,11 @@ export default function Component() {
             Experience the future of commercial vehicle checkpoint management and route planning. Optimize your journeys, save time, and increase efficiency.
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
-            <Button size="lg" className="bg-sky-500 hover:bg-sky-600 text-white transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg">
-              Get Started
-            </Button>
-            <Button size="lg" variant="outline" className="text-sky-600 border-sky-600 hover:bg-sky-600 hover:text-white transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg">
-              Learn More
-            </Button>
+            <Link href={'/login'}>
+              <Button size="lg" className="bg-sky-500 hover:bg-white hover:text-sky-500 text-white border border-sky-500 hover:border-sky-700 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+                Get Started
+              </Button>
+            </Link>
           </div>
         </motion.div>
 
@@ -137,6 +137,7 @@ export default function Component() {
             ))}
           </div>
         </motion.div>
+        <Chatbot />
       </main>
     </div>
   )
