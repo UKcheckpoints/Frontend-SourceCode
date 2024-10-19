@@ -31,10 +31,15 @@ export default function SignupPage() {
 
     const { register, handleSubmit, formState: { errors }, watch } = useForm<SignupFormData>()
 
-    const { isLoadingState } = useJwtValidator();
+    const { isLoadingState, isValid } = useJwtValidator();
     const router = useRouter();
 
     if (isLoadingState) {
+        return <UserLoadingScreen />
+    }
+
+    if (isValid) {
+        router.push('/map')
         return <UserLoadingScreen />
     }
 

@@ -24,9 +24,14 @@ export default function LoginPage() {
     const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm<ForgotPasswordData>()
     const router = useRouter();
 
-    const { isLoadingState } = useJwtValidator();
+    const { isLoadingState, isValid } = useJwtValidator();
 
     if (isLoadingState) {
+        return <UserLoadingScreen />
+    }
+
+    if (isValid) {
+        router.push('/map')
         return <UserLoadingScreen />
     }
 

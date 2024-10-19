@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import Cookies from 'js-cookie';
+import axios from 'axios';
 
 interface UserData {
     id: number;
@@ -28,27 +28,14 @@ export function useJwtValidator(): JwtValidatorResult {
     const pathname = usePathname();
 
     const logout = useCallback(() => {
-        Cookies.remove('jwt');
         setIsValid(false);
         setUserData(null);
         setError(null);
         router.push('/login');
-
     }, [router]);
 
     const validateToken = useCallback(async () => {
-        const jwtCookie = Cookies.get('jwt');
-
-        if (!jwtCookie) {
-            setIsValid(false);
-            setError('No JWT found');
-            setIsLoading(false);
-
-            if (pathname !== "/login" && pathname !== "/signup") {
-                router.push('/');
-            }
-            return;
-        }
+        setIsLoading(true);
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -56,24 +43,26 @@ export function useJwtValidator(): JwtValidatorResult {
                 throw new Error('API URL is not defined');
             }
 
-            const response = await fetch(`${apiUrl}/user/validate-jwt`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const response = await axios.get(
+                `${apiUrl}/user/validate-jwt`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    withCredentials: true,
+                }
+            );
 
-            if (response.ok) {
-                const data = await response.json();
+            if (response.status === 200) {
+                const data = response.data;
                 setIsValid(true);
                 setUserData(data.userData);
                 setError(null);
             } else {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Invalid token');
+                throw new Error('Invalid token');
             }
         } catch (err) {
+            console.log(err)
             setIsValid(false);
             setError(err instanceof Error ? err.message : 'Error validating token');
             console.error('JWT validation error:', err);
@@ -81,16 +70,15 @@ export function useJwtValidator(): JwtValidatorResult {
         } finally {
             setIsLoading(false);
         }
-    }, [logout, router, pathname]);
+    }, [logout]);
 
     const revalidate = useCallback(async () => {
-        setIsLoading(true);
         await validateToken();
     }, [validateToken]);
 
     useEffect(() => {
         validateToken();
-    }, [validateToken]);
+    }, [validateToken, pathname]);
 
     return { isValid, isLoadingState, userData, error, logout, revalidate };
 }
