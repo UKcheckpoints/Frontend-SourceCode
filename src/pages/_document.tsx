@@ -1,4 +1,5 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 
 class MyDocument extends Document {
     render() {
@@ -32,10 +33,16 @@ class MyDocument extends Document {
 
                     {/* Favicon */}
                     <link rel="icon" href="/favicon.ico" />
+
+                    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
                 </Head>
                 <body>
                     <Main />
                     <NextScript />
+                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" />
+                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" />
+                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" />
+                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" />
                 </body>
             </Html>
         );
