@@ -13,6 +13,7 @@ import { ForgotPasswordData, FormData } from '@/types/Auth'
 import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
 import UserLoadingScreen from '@/components/layout/Loader'
 import axios from 'axios';
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
     const [IsLoading, setIsLoading] = useState(false)
@@ -21,6 +22,7 @@ export default function LoginPage() {
     const [forgotPasswordStatus, setForgotPasswordStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
     const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm<ForgotPasswordData>()
+    const router = useRouter();
 
     const { isLoadingState } = useJwtValidator();
 
@@ -36,10 +38,15 @@ export default function LoginPage() {
             const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/login`, {
                 username: data.username,
                 password: data.password
-            });
+            }, { withCredentials: true });
 
             if (response.status === 200) {
                 const { token } = response.data;
+                if (token.userData.role === "SUPER_ADMIN") {
+                    router.push('/admin-dashbored')
+                } else {
+                    router.push('/map')
+                }
                 console.log('Login successful', token);
             }
         } catch (error) {
