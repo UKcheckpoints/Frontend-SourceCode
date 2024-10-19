@@ -10,15 +10,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/Label"
 import Link from 'next/link'
 import { ForgotPasswordData, FormData } from '@/types/Auth'
+import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
+import LoadingScreen from '@/components/layout/TruckLoader'
 
 export default function LoginPage() {
-    const [isLoading, setIsLoading] = useState(false)
+    const [IsLoading, setIsLoading] = useState(false)
     const [loginError, setLoginError] = useState<string | null>(null)
     const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false)
     const [forgotPasswordStatus, setForgotPasswordStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
     const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm<ForgotPasswordData>()
+
+    const { isLoadingState } = useJwtValidator();
+
+    if (isLoadingState) {
+        return <LoadingScreen status="preparing" />
+    }
 
     const onSubmit = async (data: FormData) => {
         setIsLoading(true)
@@ -27,19 +34,19 @@ export default function LoginPage() {
         try {
             await new Promise(resolve => setTimeout(resolve, 2000))
             console.log(data)
-        } catch (error) {
+        } catch {
             setLoginError("An error occurred. Please try again.")
         } finally {
             setIsLoading(false)
         }
     }
 
-    const onForgotPasswordSubmit = async (data: ForgotPasswordData) => {
+    const onForgotPasswordSubmit = async (_data: ForgotPasswordData) => {
         setForgotPasswordStatus('loading')
         try {
             await new Promise(resolve => setTimeout(resolve, 2000))
             setForgotPasswordStatus('success')
-        } catch (error) {
+        } catch {
             setForgotPasswordStatus('error')
         }
     }
@@ -112,9 +119,9 @@ export default function LoginPage() {
                         <Button
                             type="submit"
                             className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
-                            disabled={isLoading}
+                            disabled={IsLoading}
                         >
-                            {isLoading ? (
+                            {IsLoading ? (
                                 <>
                                     <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                                     Signing in...
@@ -128,7 +135,7 @@ export default function LoginPage() {
 
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-600">
-                        Don't have an account?{' '}
+                        Don&apos;t have an account?{' '}
                         <Link href="/signup" className="font-medium text-sky-600 hover:text-sky-500">
                             Create one now
                         </Link>
@@ -141,7 +148,7 @@ export default function LoginPage() {
                     <DialogHeader className="space-y-2">
                         <DialogTitle className="text-2xl font-bold text-gray-900">Forgot Password</DialogTitle>
                         <DialogDescription className="text-gray-500">
-                            Enter your email address and we'll send you a link to reset your password.
+                            Enter your email address and we&apos;ll send you a link to reset your password.
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmitForgotPassword(onForgotPasswordSubmit)} className="mt-4">

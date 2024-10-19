@@ -11,6 +11,8 @@ import { Checkbox } from "@/components/ui/Checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
 import { Label } from "@/components/ui/Label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert"
+import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
+import LoadingScreen from '@/components/layout/TruckLoader'
 
 interface SignupFormData {
     username: string
@@ -26,6 +28,12 @@ export default function SignupPage() {
     const [showTerms, setShowTerms] = useState(false)
 
     const { register, handleSubmit, formState: { errors }, watch } = useForm<SignupFormData>()
+
+    const { isLoadingState } = useJwtValidator();
+
+    if (isLoadingState) {
+        return <LoadingScreen status="preparing" />
+    }
 
     const onSubmit = async (data: SignupFormData) => {
         setIsLoading(true)

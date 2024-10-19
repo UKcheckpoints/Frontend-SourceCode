@@ -5,24 +5,7 @@ import { X, Send, Paperclip, FileText, Film, XCircle, ImageIcon, BadgeHelpIcon }
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/Dialog'
-
-type MessageContent = string | string[] | { label: string; value: string }[] | {
-    type: 'media'
-    url: string
-    mimeType: string
-    fileName: string
-}
-
-interface Message {
-    type: 'text' | 'buttons' | 'quickReplies' | 'input' | 'media'
-    content: MessageContent
-    isUser: boolean
-}
-
-interface WebSocketMessage {
-    type: 'text' | 'buttons' | 'quickReplies' | 'input' | 'media'
-    content: MessageContent
-}
+import { WebSocketMessage, Message } from '@/types/ChatBot'
 
 export default function ChatSupport() {
     const [isOpen, setIsOpen] = useState(false)
@@ -35,6 +18,19 @@ export default function ChatSupport() {
     const chatRef = useRef<HTMLDivElement>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
     const wsRef = useRef<WebSocket | null>(null)
+
+    const sendWhatsAppMessage = useCallback(() => {
+        const whatsappURL = "https://api.whatsapp.com/send/?phone=447985118502&text=Hi&type=phone_number&app_absent=0";
+        const message: Message = {
+            type: 'quickReplies',
+            content: [
+                { label: 'Contact via WhatsApp', value: whatsappURL },
+            ],
+            isUser: false
+        };
+        setMessages((prev) => [...prev, message]);
+    }, []);
+
 
     const handleFileSelect = useCallback((file: File) => {
         if (file.size > 15 * 1024 * 1024) {
@@ -136,12 +132,23 @@ export default function ChatSupport() {
     }, [])
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
         if (inputMessage.trim()) {
-            sendMessage({ type: 'text', content: inputMessage, isUser: true })
-            setInputMessage('')
+            sendMessage({ type: 'text', content: inputMessage, isUser: true });
+            setInputMessage('');
+
+            // Send the automated response
+            setTimeout(() => {
+                sendMessage({
+                    type: 'text',
+                    content: "This is Not Added But You can Contact via WhatsApp",
+                    isUser: false
+                });
+                sendWhatsAppMessage();
+            }, 1000);
         }
-    }, [inputMessage, sendMessage])
+    }, [inputMessage, sendMessage, sendWhatsAppMessage]);
+
 
     const renderMessage = useCallback((message: Message, index: number) => {
         switch (message.type) {
@@ -234,16 +241,18 @@ export default function ChatSupport() {
                 return (
                     <div key={index} className="flex flex-wrap gap-2 animate-fadeIn">
                         {(message.content as { label: string; value: string }[]).map((reply, i) => (
-                            <button
+                            <a
                                 key={i}
-                                onClick={() => sendMessage({ type: 'text', content: reply.value, isUser: true })}
-                                className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                                href={reply.value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-green-500 text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors"
                             >
                                 {reply.label}
-                            </button>
+                            </a>
                         ))}
                     </div>
-                )
+                );
             case 'input':
                 return (
                     <div key={index} className="w-full animate-fadeIn">
