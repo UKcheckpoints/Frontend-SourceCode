@@ -12,7 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/Label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert"
 import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
-import LoadingScreen from '@/components/layout/TruckLoader'
+import UserLoadingScreen from '@/components/layout/Loader'
+import axios from 'axios';
+import { useRouter } from 'next/navigation'
 
 interface SignupFormData {
     username: string
@@ -30,31 +32,51 @@ export default function SignupPage() {
     const { register, handleSubmit, formState: { errors }, watch } = useForm<SignupFormData>()
 
     const { isLoadingState } = useJwtValidator();
+    const router = useRouter();
 
     if (isLoadingState) {
-        return <LoadingScreen status="preparing" />
+        return <UserLoadingScreen />
     }
 
     const onSubmit = async (data: SignupFormData) => {
-        setIsLoading(true)
-        setSignupError(null)
+        setIsLoading(true);
+        setSignupError(null);
 
         try {
             if (!data.acceptTerms) {
-                throw new Error("You must accept the terms and conditions")
+                throw new Error("You must accept the terms and conditions");
             }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            console.log("Signup successful:", data)
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/register`, {
+                username: data.username,
+                email: data.email,
+                password: data.password
+            });
 
-            // Here you would typically send the data to your backend
+            if (response.status === 201) {
+                console.log(response.data.message);
+                router.push('/login');
+            }
         } catch (error) {
-            setSignupError(error instanceof Error ? error.message : "An unexpected error occurred")
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    if (error.response.status === 409) {
+                        setSignupError("Username or email already exists");
+                    } else if (error.response.status === 400) {
+                        setSignupError("Password must be at least 8 characters long");
+                    } else {
+                        setSignupError(error.response.data.message || "An unexpected error occurred");
+                    }
+                } else {
+                    setSignupError("Network error. Please check your internet connection.");
+                }
+            } else {
+                setSignupError(error instanceof Error ? error.message : "An unexpected error occurred");
+            }
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center px-4 sm:px-6 lg:px-8">

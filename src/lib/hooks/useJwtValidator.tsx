@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Cookies from 'js-cookie';
 
 interface UserData {
@@ -25,6 +25,7 @@ export function useJwtValidator(): JwtValidatorResult {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const pathname = usePathname();
 
     const logout = useCallback(() => {
         Cookies.remove('jwt');
@@ -32,6 +33,7 @@ export function useJwtValidator(): JwtValidatorResult {
         setUserData(null);
         setError(null);
         router.push('/login');
+
     }, [router]);
 
     const validateToken = useCallback(async () => {
@@ -41,7 +43,10 @@ export function useJwtValidator(): JwtValidatorResult {
             setIsValid(false);
             setError('No JWT found');
             setIsLoading(false);
-            router.push('/')
+
+            if (pathname !== "/login" && pathname !== "/signup") {
+                router.push('/');
+            }
             return;
         }
 
@@ -76,7 +81,7 @@ export function useJwtValidator(): JwtValidatorResult {
         } finally {
             setIsLoading(false);
         }
-    }, [logout]);
+    }, [logout, router, pathname]);
 
     const revalidate = useCallback(async () => {
         setIsLoading(true);
