@@ -2,16 +2,28 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from "framer-motion"
-import { MapIcon, Loader2 } from 'lucide-react'
+import { MapIcon, Loader2, Bell, MapPin, AlertCircle } from 'lucide-react'
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useForm } from "react-hook-form"
 import Link from 'next/link'
-import { SignupFormData } from '@/types/Auth'
+import { Checkbox } from "@/components/ui/Checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
+import { Label } from "@/components/ui/Label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert"
+
+interface SignupFormData {
+    username: string
+    email: string
+    password: string
+    confirmPassword: string
+    acceptTerms: boolean
+}
 
 export default function SignupPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [signupError, setSignupError] = useState<string | null>(null)
+    const [showTerms, setShowTerms] = useState(false)
 
     const { register, handleSubmit, formState: { errors }, watch } = useForm<SignupFormData>()
 
@@ -20,11 +32,17 @@ export default function SignupPage() {
         setSignupError(null)
 
         try {
+            if (!data.acceptTerms) {
+                throw new Error("You must accept the terms and conditions")
+            }
+
+            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 2000))
-            console.log(data)
+            console.log("Signup successful:", data)
+
             // Here you would typically send the data to your backend
         } catch (error) {
-            setSignupError("An error occurred. Please try again.")
+            setSignupError(error instanceof Error ? error.message : "An unexpected error occurred")
         } finally {
             setIsLoading(false)
         }
@@ -53,15 +71,15 @@ export default function SignupPage() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div className="space-y-6">
                         <Input
-                            label="Username"
                             type="text"
                             autoComplete="username"
                             required
                             {...register("username", { required: "Username is required" })}
-                            error={errors.username?.message}
+                            placeholder="Username"
                         />
+                        {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
+
                         <Input
-                            label="Email"
                             type="email"
                             autoComplete="email"
                             required
@@ -72,10 +90,11 @@ export default function SignupPage() {
                                     message: "Invalid email address"
                                 }
                             })}
-                            error={errors.email?.message}
+                            placeholder="Email"
                         />
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+
                         <Input
-                            label="Password"
                             type="password"
                             autoComplete="new-password"
                             required
@@ -86,11 +105,12 @@ export default function SignupPage() {
                                     message: "Password must be at least 8 characters long"
                                 }
                             })}
-                            error={errors.password?.message}
-                            showPasswordToggle
+                            placeholder="Password"
+                            showPasswordToggle={true}
                         />
+                        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+
                         <Input
-                            label="Confirm Password"
                             type="password"
                             autoComplete="new-password"
                             required
@@ -102,9 +122,39 @@ export default function SignupPage() {
                                     }
                                 }
                             })}
-                            error={errors.confirmPassword?.message}
-                            showPasswordToggle
+                            placeholder="Confirm Password"
+                            showPasswordToggle={true}
                         />
+                        {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id="terms" {...register("acceptTerms", { required: true })} className='bg-white' />
+                            <Label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                I accept the terms and conditions
+                            </Label>
+                        </div>
+                        {errors.acceptTerms && <p className="text-red-500 text-xs mt-1">You must accept the terms and conditions</p>}
+
+                        <Dialog open={showTerms} onOpenChange={setShowTerms}>
+                            <DialogTrigger asChild>
+                                <Button variant="link" className="text-sky-600 hover:text-sky-700 p-0">View Terms and Conditions</Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px] bg-white">
+                                <DialogHeader>
+                                    <DialogTitle>Terms and Conditions</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <p className="text-sm text-gray-500">
+                                        By accepting these terms, you agree to:
+                                    </p>
+                                    <ul className="list-disc list-inside text-sm text-gray-500 space-y-2">
+                                        <li>Allow us to access your location <MapPin className="inline-block w-4 h-4" /></li>
+                                        <li>Receive push notifications <Bell className="inline-block w-4 h-4" /></li>
+                                        <li>Let us use your location data to improve your route even when the app is closed</li>
+                                    </ul>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
 
                     <AnimatePresence>
@@ -113,9 +163,12 @@ export default function SignupPage() {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="text-red-500 text-sm mt-2 bg-red-100 p-3 rounded-md"
                             >
-                                {signupError}
+                                <Alert variant="destructive">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertTitle>Error</AlertTitle>
+                                    <AlertDescription>{signupError}</AlertDescription>
+                                </Alert>
                             </motion.div>
                         )}
                     </AnimatePresence>
