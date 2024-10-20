@@ -15,6 +15,7 @@ import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
 import UserLoadingScreen from '@/components/layout/Loader'
 import axios from 'axios';
 import { useRouter } from 'next/navigation'
+import { useSignupRedirect } from '@/lib/hooks/useSignupRedirect'
 
 interface SignupFormData {
     username: string
@@ -33,6 +34,7 @@ export default function SignupPage() {
 
     const { isLoadingState, isValid } = useJwtValidator();
     const router = useRouter();
+    useSignupRedirect();
 
     if (isLoadingState) {
         return <UserLoadingScreen />
@@ -60,7 +62,8 @@ export default function SignupPage() {
 
             if (response.status === 201) {
                 console.log(response.data.message);
-                router.push('/login');
+                localStorage.setItem('signupCompleted', 'true');
+                router.push('/payment');
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {

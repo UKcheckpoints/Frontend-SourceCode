@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CardElement, useStripe, useElements, Elements } from '@stripe/react-stripe-js'
 import { ArrowRight } from 'lucide-react'
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { loadStripe } from '@stripe/stripe-js';
 import { subscriptionTier } from '@/constants/layout/Payment';
+import { useRouter } from 'next/navigation';
 
 function ModernPaymentUI() {
     const [isProcessing, setIsProcessing] = useState<boolean>(false)
@@ -17,6 +18,14 @@ function ModernPaymentUI() {
     const [email, setEmail] = useState<string>('')
     const stripe = useStripe()
     const elements = useElements()
+    const router = useRouter();
+
+    useEffect(() => {
+        const signupCompleted = localStorage.getItem('signupCompleted');
+        if (signupCompleted !== 'true') {
+            router.push('/signup');
+        }
+    }, [router]);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault()
