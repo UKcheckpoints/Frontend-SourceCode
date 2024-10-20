@@ -5,7 +5,7 @@ export interface Checkpoint {
     name: string;
     lat: number;
     lng: number;
-    status: 'green' | 'amber' | 'red';
+    status: 'Red' | 'Amber' | 'Green';
     details?: string;
 }
 
@@ -15,7 +15,7 @@ export const checkpoints: Checkpoint[] = [
         name: 'London Bridge',
         lat: 51.5074,
         lng: -0.0877,
-        status: 'green',
+        status: 'Green',
         details: 'All systems operational. Traffic flow normal.'
     },
     {
@@ -23,7 +23,7 @@ export const checkpoints: Checkpoint[] = [
         name: 'Tower Bridge',
         lat: 51.5055,
         lng: -0.0754,
-        status: 'amber',
+        status: 'Amber',
         details: 'Minor delays due to maintenance work.'
     },
     {
@@ -31,7 +31,7 @@ export const checkpoints: Checkpoint[] = [
         name: 'Westminster',
         lat: 51.5007,
         lng: -0.1246,
-        status: 'red',
+        status: 'Red',
         details: 'Closed for scheduled repairs.'
     },
     {
@@ -39,7 +39,7 @@ export const checkpoints: Checkpoint[] = [
         name: 'Waterloo',
         lat: 51.5036,
         lng: -0.1149,
-        status: 'green',
+        status: 'Green',
         details: 'Operating normally. Light traffic conditions.'
     },
     {
@@ -47,7 +47,7 @@ export const checkpoints: Checkpoint[] = [
         name: 'Kings Cross',
         lat: 51.5320,
         lng: -0.1233,
-        status: 'amber',
+        status: 'Amber',
         details: 'Moderate congestion expected during peak hours.'
     }
 ];

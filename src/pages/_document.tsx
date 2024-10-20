@@ -1,3 +1,4 @@
+// pages/_document.js
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import Script from 'next/script';
 
@@ -34,15 +35,34 @@ class MyDocument extends Document {
                     {/* Favicon */}
                     <link rel="icon" href="/favicon.ico" />
 
-                    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+                    {/* HERE Maps CSS */}
+                    <link
+                        rel="stylesheet"
+                        type="text/css"
+                        href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"
+                    />
                 </Head>
                 <body>
                     <Main />
                     <NextScript />
-                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" />
-                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" />
-                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" />
-                    <Script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" />
+
+                    {/* HERE Maps Scripts */}
+                    <Script
+                        src="https://js.api.here.com/v3/3.1/mapsjs-core.js"
+                        strategy="beforeInteractive"
+                    />
+                    <Script
+                        src="https://js.api.here.com/v3/3.1/mapsjs-service.js"
+                        strategy="beforeInteractive"
+                    />
+                    <Script
+                        src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"
+                        strategy="beforeInteractive"
+                    />
+                    <Script
+                        src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"
+                        strategy="beforeInteractive"
+                    />
                 </body>
             </Html>
         );
