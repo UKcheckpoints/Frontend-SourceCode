@@ -23,38 +23,49 @@ function ModernPaymentUI() {
     useEffect(() => {
         const signupCompleted = localStorage.getItem('signupCompleted');
         if (signupCompleted !== 'true') {
-            router.push('/signup');
+            // router.push('/signup');
         }
     }, [router]);
 
     const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault()
+        event.preventDefault();
 
         if (!stripe || !elements) {
-            return
+            return;
         }
 
-        setIsProcessing(true)
-        setPaymentError(null)
+        setIsProcessing(true);
+        setPaymentError(null);
 
-        const cardElement = elements.getElement(CardElement)
+        const response = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ amount: subscriptionTier.price }),
+        });
 
-        if (cardElement) {
-            const { error, paymentMethod } = await stripe.createPaymentMethod({
-                type: 'card',
-                card: cardElement,
-            })
+        const { clientSecret } = await response.json();
 
-            if (error) {
-                setPaymentError(error.message ?? 'An unknown error occurred')
-                setIsProcessing(false)
-            } else {
-                localStorage.setItem("signupCompleted", "false")
-                console.log('Payment successful:', paymentMethod)
-                setIsProcessing(false)
-            }
+        const result = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: elements.getElement(CardElement)!,
+                billing_details: {
+                    email: email,
+                },
+            },
+        });
+
+        if (result.error) {
+            setPaymentError(result.error.message ?? 'An unknown error occurred');
+            setIsProcessing(false);
+        } else {
+            console.log('Payment successful:', result.paymentIntent);
+            localStorage.setItem("signupCompleted", "false");
+            setIsProcessing(false);
+            router.push(`/payment/success?payment_intent=${result.paymentIntent.id}`);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white flex items-center justify-center p-4">
@@ -169,7 +180,7 @@ function ModernPaymentUI() {
 }
 
 export default function App() {
-    const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY!);
+    const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
     return (
         <>
