@@ -14,6 +14,7 @@ import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
 import UserLoadingScreen from '@/components/layout/Loader'
 import axios from 'axios';
 import { useRouter } from 'next/navigation'
+import { useSignupRedirect } from '@/lib/hooks/useSignupRedirect'
 
 export default function LoginPage() {
     const [IsLoading, setIsLoading] = useState(false)
@@ -23,6 +24,7 @@ export default function LoginPage() {
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
     const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm<ForgotPasswordData>()
     const router = useRouter();
+    useSignupRedirect();
 
     const { isLoadingState, isValid } = useJwtValidator();
 

@@ -49,7 +49,7 @@ function ModernPaymentUI() {
                 setPaymentError(error.message ?? 'An unknown error occurred')
                 setIsProcessing(false)
             } else {
-                // Here you would typically send the paymentMethod.id to your server
+                localStorage.setItem("signupCompleted", "false")
                 console.log('Payment successful:', paymentMethod)
                 setIsProcessing(false)
             }

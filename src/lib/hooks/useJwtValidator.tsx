@@ -66,11 +66,10 @@ export function useJwtValidator(): JwtValidatorResult {
             setIsValid(false);
             setError(err instanceof Error ? err.message : 'Error validating token');
             console.error('JWT validation error:', err);
-            logout();
         } finally {
             setIsLoading(false);
         }
-    }, [logout]);
+    }, []);
 
     const revalidate = useCallback(async () => {
         await validateToken();
