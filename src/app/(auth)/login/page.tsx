@@ -77,7 +77,7 @@ export default function LoginPage() {
         }
     };
 
-    const onForgotPasswordSubmit = async (_data: ForgotPasswordData) => {
+    const onForgotPasswordSubmit = async (data: ForgotPasswordData) => {
         setForgotPasswordStatus('loading')
         try {
             await new Promise(resolve => setTimeout(resolve, 2000))
