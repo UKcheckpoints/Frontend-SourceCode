@@ -1,58 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 
-interface PermissionStatus {
-    geolocation: 'granted' | 'denied' | 'prompt';
-    notification: 'granted' | 'denied' | 'prompt';
-}
+type PermissionType = 'geolocation' | 'notification';
+type PermissionStatus = 'granted' | 'denied' | 'prompt';
 
-export const usePermissionCheck = () => {
-    const [permissions, setPermissions] = useState<PermissionStatus>({
+export const useSequentialPermissions = () => {
+    const [currentPermission, setCurrentPermission] = useState<PermissionType>('geolocation');
+    const [showPrompt, setShowPrompt] = useState(false);
+    const [permissions, setPermissions] = useState<Record<PermissionType, PermissionStatus>>({
         geolocation: 'prompt',
         notification: 'prompt',
     });
-    const [showPrompt, setShowPrompt] = useState(false);
 
-    const checkPermissions = async () => {
+    const checkPermission = async (type: PermissionType) => {
         if ('permissions' in navigator) {
-            const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
-            const notificationStatus = await navigator.permissions.query({ name: 'notifications' });
+            const status = await navigator.permissions.query({ name: type as PermissionName });
+            setPermissions(prev => ({ ...prev, [type]: status.state }));
+            return status.state;
+        }
+        return 'prompt';
+    };
 
-            setPermissions({
-                geolocation: geoStatus.state,
-                notification: notificationStatus.state,
+    const requestPermission = async (type: PermissionType) => {
+        if (type === 'geolocation') {
+            return new Promise<PermissionStatus>((resolve) => {
+                navigator.geolocation.getCurrentPosition(
+                    () => resolve('granted'),
+                    () => resolve('denied')
+                );
             });
+        } else if (type === 'notification') {
+            const result = await Notification.requestPermission();
+            return result as PermissionStatus;
+        }
+        return 'denied';
+    };
 
-            if (geoStatus.state === 'prompt' || notificationStatus.state === 'prompt') {
-                setShowPrompt(true);
-            } else {
-                setShowPrompt(false);
-            }
+    const handleNextPermission = useCallback(() => {
+        if (currentPermission === 'geolocation') {
+            setCurrentPermission('notification');
+        } else {
+            setShowPrompt(false);
+        }
+    }, [currentPermission]);
 
-            geoStatus.onchange = () => {
-                setPermissions(prev => ({ ...prev, geolocation: geoStatus.state }));
-            };
+    const requestCurrentPermission = async () => {
+        const result = await requestPermission(currentPermission);
+        setPermissions(prev => ({ ...prev, [currentPermission]: result }));
 
-            notificationStatus.onchange = () => {
-                setPermissions(prev => ({ ...prev, notification: notificationStatus.state }));
-            };
+        if (result === 'granted') {
+            handleNextPermission();
+        } else {
+            setShowPrompt(true);
         }
     };
 
     useEffect(() => {
-        checkPermissions();
-    }, []);
+        const checkCurrentPermission = async () => {
+            const status = await checkPermission(currentPermission);
+            if (status === 'prompt') {
+                setShowPrompt(true);
+            } else if (status === 'granted') {
+                handleNextPermission();
+            }
+        };
 
-    const requestPermissions = async () => {
-        if (permissions.geolocation === 'prompt') {
-            await navigator.geolocation.getCurrentPosition(() => { });
-        }
-        if (permissions.notification === 'prompt') {
-            await Notification.requestPermission();
-        }
-        checkPermissions();
-    };
+        checkCurrentPermission();
+    }, [currentPermission, handleNextPermission]);
 
     const PermissionPrompt: React.FC = () => (
         <AnimatePresence>
@@ -77,13 +92,13 @@ export const usePermissionCheck = () => {
                         </button>
                         <h2 className="text-2xl font-bold mb-4">Permission Required</h2>
                         <p className="mb-4">
-                            This app requires geolocation and notification permissions to function properly.
+                            This app requires {currentPermission} permission to function properly.
                         </p>
                         <button
-                            onClick={requestPermissions}
+                            onClick={requestCurrentPermission}
                             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                         >
-                            Grant Permissions
+                            Grant {currentPermission.charAt(0).toUpperCase() + currentPermission.slice(1)} Permission
                         </button>
                     </motion.div>
                 </motion.div>
@@ -91,5 +106,5 @@ export const usePermissionCheck = () => {
         </AnimatePresence>
     );
 
-    return { permissions, PermissionPrompt, requestPermissions };
+    return { permissions, PermissionPrompt };
 };
