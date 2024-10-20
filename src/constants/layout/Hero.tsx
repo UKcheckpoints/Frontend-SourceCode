@@ -3,7 +3,7 @@ import { CheckCircleIcon, MapIcon, RouteIcon, TruckIcon } from "lucide-react"
 
 export const navItems: NavItem[] = [
     { name: 'Affiliate Program', href: '#' },
-    { name: 'Whatsapp', href: '#' },
+    { name: 'Whatsapp', href: 'https://api.whatsapp.com/send/?phone=447985118502&text=Hi&type=phone_number&app_absent=0' },
 ]
 
 export const quickActions: QuickAction[] = [

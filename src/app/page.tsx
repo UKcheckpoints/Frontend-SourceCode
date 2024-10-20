@@ -9,9 +9,16 @@ import { features, navItems, quickActions } from '@/constants/layout/Hero'
 import logoImage from '@/assets/logo.jpg'
 import Image from 'next/image'
 import Chatbot from '@/components/layout/ChatBot'
+import { useJwtValidator } from '@/lib/hooks/useJwtValidator'
+import UserLoadingScreen from '@/components/layout/Loader'
 
 export default function Component() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isLoadingState } = useJwtValidator();
+
+  if (isLoadingState) {
+    return <UserLoadingScreen />
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100 text-sky-900">
