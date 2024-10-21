@@ -8,7 +8,8 @@ export function useSignupRedirect() {
         const signupCompleted = localStorage.getItem('signupCompleted');
         const needToPay = localStorage.getItem('needToPay');
         if (signupCompleted === 'true' && needToPay === 'true') {
-            router.push('/payment');
+            const payid = localStorage.getItem("pay_id");
+            router.push(`/payment?pay_id=${payid!}`);
         }
     }, [router]);
 }

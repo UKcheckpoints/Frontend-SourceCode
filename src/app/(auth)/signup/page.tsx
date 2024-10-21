@@ -62,9 +62,11 @@ export default function SignupPage() {
 
             if (response.status === 201) {
                 console.log(response.data.message);
+                const payid = data.email || localStorage.getItem("pay_id");
+                localStorage.setItem('pay_id', btoa(payid!));
                 localStorage.setItem('needToPay', 'true');
                 localStorage.setItem('signupCompleted', 'true');
-                router.push('/payment');
+                router.push(`/payment?pay_id=${btoa(payid!)}`);
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {

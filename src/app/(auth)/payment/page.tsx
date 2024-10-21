@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { loadStripe } from '@stripe/stripe-js';
 import { subscriptionTier } from '@/constants/layout/Payment';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function ModernPaymentUI() {
     const [isProcessing, setIsProcessing] = useState<boolean>(false)
@@ -19,13 +19,17 @@ function ModernPaymentUI() {
     const stripe = useStripe()
     const elements = useElements()
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const emailParam = searchParams?.get('pay_id');
 
     useEffect(() => {
+        setEmail(atob(emailParam!))
         const signupCompleted = localStorage.getItem('signupCompleted');
         if (signupCompleted !== 'true') {
-            // router.push('/signup');
+            router.push('/signup');
         }
-    }, [router]);
+    }, [router, emailParam]);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -108,6 +112,7 @@ function ModernPaymentUI() {
                                         id="email"
                                         type="email"
                                         placeholder="your@email.com"
+                                        readOnly
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
