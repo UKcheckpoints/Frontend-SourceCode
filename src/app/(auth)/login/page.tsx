@@ -20,7 +20,7 @@ export default function LoginPage() {
     const [IsLoading, setIsLoading] = useState(false)
     const [loginError, setLoginError] = useState<string | null>(null)
     const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false)
-    const [forgotPasswordStatus, setForgotPasswordStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+    const [forgotPasswordStatus, setForgotPasswordStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'not-found'>('idle')
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
     const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm<ForgotPasswordData>()
     const router = useRouter();
@@ -49,9 +49,13 @@ export default function LoginPage() {
 
             if (response.status === 200) {
                 const { token } = response.data;
-                if (token.userData.role === "SUPER_ADMIN") {
+                if (token.userData.role === "SUPER_ADMIN" || token.userData.role === "ADMIN") {
                     router.push('/admin-dashbored')
                 } else {
+                    if (!token.userData.stripeCustomer && token.userData.role !== "FRIEND") {
+                        localStorage.setItem('needToPay', 'true')
+                        localStorage.setItem('userData', JSON.stringify(token.userData))
+                    }
                     router.push('/map')
                 }
                 console.log('Login successful', token);
@@ -76,16 +80,21 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
-
     const onForgotPasswordSubmit = async (data: ForgotPasswordData) => {
-        setForgotPasswordStatus('loading')
+        setForgotPasswordStatus('loading');
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            setForgotPasswordStatus('success')
-        } catch {
-            setForgotPasswordStatus('error')
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/password-reset`, { email: data.email });
+            console.log(response.data)
+            if (response.data.statusCode === 200) {
+                setForgotPasswordStatus('success');
+            } else {
+                setForgotPasswordStatus('error');
+            }
+        } catch (error) {
+            setForgotPasswordStatus('not-found');
+            console.error('Error requesting password reset:', error);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center px-4 sm:px-6 lg:px-8">
@@ -218,6 +227,12 @@ export default function LoginPage() {
                                 <div className="flex items-center text-red-600 bg-red-50 p-3 rounded-md">
                                     <XCircle className="mr-2 h-5 w-5" />
                                     <span className="text-sm">An error occurred. Please try again.</span>
+                                </div>
+                            )}
+                            {forgotPasswordStatus === 'not-found' && (
+                                <div className="flex items-center text-red-600 bg-red-50 p-3 rounded-md">
+                                    <XCircle className="mr-2 h-5 w-5" />
+                                    <span className="text-sm">User Not Found in Database. Re-Check Your email first!</span>
                                 </div>
                             )}
                         </div>

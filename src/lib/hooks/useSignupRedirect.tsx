@@ -6,7 +6,8 @@ export function useSignupRedirect() {
 
     useEffect(() => {
         const signupCompleted = localStorage.getItem('signupCompleted');
-        if (signupCompleted === 'true') {
+        const needToPay = localStorage.getItem('needToPay');
+        if (signupCompleted === 'true' && needToPay === 'true') {
             router.push('/payment');
         }
     }, [router]);

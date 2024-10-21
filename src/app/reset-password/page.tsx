@@ -14,12 +14,22 @@ const ResetPassword: React.FC = () => {
     const router = useRouter();
     const searchParams = useSearchParams()!;
     const token = searchParams.get('token');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         if (!token) {
             setError('Invalid reset token');
         }
     }, [token]);
+
+    const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
+        if (field === 'password') {
+            setShowPassword(!showPassword);
+        } else {
+            setShowConfirmPassword(!showConfirmPassword);
+        }
+    };
 
     const validatePassword = (password: string): string[] => {
         const errors = [];
@@ -100,17 +110,24 @@ const ResetPassword: React.FC = () => {
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                     New Password
                                 </label>
-                                <div className="mt-1">
+                                <div className="mt-1 relative">
                                     <input
                                         id="password"
                                         name="password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         autoComplete="new-password"
                                         required
                                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                     />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                        onClick={() => togglePasswordVisibility('password')}
+                                    >
+                                        {showPassword ? 'Hide' : 'Show'}
+                                    </button>
                                 </div>
                             </div>
 
@@ -118,17 +135,24 @@ const ResetPassword: React.FC = () => {
                                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                                     Confirm New Password
                                 </label>
-                                <div className="mt-1">
+                                <div className="mt-1 relative">
                                     <input
                                         id="confirmPassword"
                                         name="confirmPassword"
-                                        type="password"
+                                        type={showConfirmPassword ? "text" : "password"}
                                         autoComplete="new-password"
                                         required
                                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                        onClick={() => togglePasswordVisibility('confirmPassword')}
+                                    >
+                                        {showConfirmPassword ? 'Hide' : 'Show'}
+                                    </button>
                                 </div>
                             </div>
 

@@ -62,6 +62,7 @@ export default function SignupPage() {
 
             if (response.status === 201) {
                 console.log(response.data.message);
+                localStorage.setItem('needToPay', 'true');
                 localStorage.setItem('signupCompleted', 'true');
                 router.push('/payment');
             }

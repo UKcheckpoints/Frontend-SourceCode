@@ -11,7 +11,7 @@ const MapPage = dynamic(() => import('@/components/layout/map/CheckpointMap'), {
 });
 
 function Page() {
-    // useSignupRedirect();
+    useSignupRedirect();
 
     return (
         <div>
