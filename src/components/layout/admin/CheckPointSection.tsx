@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
 import { AddCheckpointForm } from '@/components/layout/AddCheckPointForm'
+import { useWebSocketContext } from '@/lib/contexts/WebSocketContext'
 
 type Checkpoint = {
     id: string
@@ -65,6 +66,7 @@ export function CheckpointManagementContent({ isSuperAdmin }: Props) {
         isOpen: false,
         checkpointId: null
     })
+    const { connectWebSocket } = useWebSocketContext();
 
     const filteredCheckpoints = useMemo(() => {
         return checkpoints.filter(checkpoint =>
@@ -72,6 +74,11 @@ export function CheckpointManagementContent({ isSuperAdmin }: Props) {
             checkpoint.status.toLowerCase().includes(searchTerm.toLowerCase())
         )
     }, [checkpoints, searchTerm])
+
+    useEffect(() => {
+        connectWebSocket();
+    }, [connectWebSocket]);
+
 
     const totalPages = Math.ceil(filteredCheckpoints.length / checkpointsPerPage)
 

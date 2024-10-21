@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../../globals.css";
 import { ToastProvider } from "@/components/ui/UseToast";
+import { WebSocketProvider } from "@/lib/contexts/WebSocketContext";
 
 // Updated metadata for SEO
 export const metadata: Metadata = {
@@ -37,9 +38,11 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                <ToastProvider>
-                    {children}
-                </ToastProvider>
+                <WebSocketProvider>
+                    <ToastProvider>
+                        {children}
+                    </ToastProvider>
+                </WebSocketProvider>
             </body>
         </html>
     );

@@ -39,7 +39,7 @@ type MessageType =
     | RoutePlanUpdateNode
     | TrafficUpdateNode;
 
-const useWebSocket = (url: string) => {
+const useWebSocket = () => {
     const [messages, setMessages] = useState<MessageType[]>([]);
     const [connectionState, setConnectionState] = useState<ConnectionState>('DISCONNECTED');
     const socketRef = useRef<WebSocket | null>(null);
@@ -52,18 +52,20 @@ const useWebSocket = (url: string) => {
         throw new Error(`WebSocket encountered an error: ${error}`);
     };
 
-    const connectWebSocket = useCallback((usernameBase64?: string) => {
+    const connectWebSocket = useCallback(() => {
         if (isConnectedRef.current) return;
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const username = btoa(userData.username)
 
         setConnectionState('CONNECTING');
-        socketRef.current = new WebSocket(url);
+        socketRef.current = new WebSocket(process.env.NEXT_PUBLIC_WSURL!);
 
         socketRef.current.onopen = () => {
             setConnectionState('CONNECTED');
             isConnectedRef.current = true;
 
-            if (usernameBase64) {
-                sendMessage({ type: 'auth', email: usernameBase64 });
+            if (username) {
+                sendMessage({ type: 'auth', email: username });
             }
         };
 
@@ -85,7 +87,7 @@ const useWebSocket = (url: string) => {
         socketRef.current.onerror = (error: Event) => {
             handleError(error);
         };
-    }, [url]);
+    }, []);
 
     const sendMessage = (message: MessageType) => {
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
