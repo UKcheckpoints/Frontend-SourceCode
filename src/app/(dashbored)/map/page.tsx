@@ -1,6 +1,7 @@
 'use client';
 
 import UserLoadingScreen from '@/components/layout/Loader';
+import { ToastProvider } from '@/components/ui/UseToast';
 import { useSignupRedirect } from '@/lib/hooks/useSignupRedirect';
 import dynamic from 'next/dynamic';
 import React from 'react';
@@ -15,7 +16,9 @@ function Page() {
 
     return (
         <div>
-            <MapPage />
+            <ToastProvider>
+                <MapPage />
+            </ToastProvider>
         </div>
     );
 }
