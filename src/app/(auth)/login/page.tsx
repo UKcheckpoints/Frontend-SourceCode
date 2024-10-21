@@ -58,13 +58,17 @@ export default function LoginPage() {
                     }
                     router.push('/map')
                 }
+                localStorage.setItem("wssessionId", atob(token.userData.email))
                 console.log('Login successful', token);
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response) {
+                    console.log(error.response)
                     if (error.response.status === 422) {
                         setLoginError("Missing required fields. Please provide both username and password.");
+                    } else if (error.response.data.message) {
+                        setLoginError(error.response.data.message);
                     } else if (error.response.status === 401) {
                         setLoginError("Invalid username or password.");
                     } else {

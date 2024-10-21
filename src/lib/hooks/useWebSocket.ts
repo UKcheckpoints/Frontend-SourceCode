@@ -52,7 +52,7 @@ const useWebSocket = (url: string) => {
         throw new Error(`WebSocket encountered an error: ${error}`);
     };
 
-    const connectWebSocket = useCallback((emailBase64?: string) => {
+    const connectWebSocket = useCallback((usernameBase64?: string) => {
         if (isConnectedRef.current) return;
 
         setConnectionState('CONNECTING');
@@ -62,8 +62,8 @@ const useWebSocket = (url: string) => {
             setConnectionState('CONNECTED');
             isConnectedRef.current = true;
 
-            if (emailBase64) {
-                sendMessage({ type: 'auth', email: emailBase64 });
+            if (usernameBase64) {
+                sendMessage({ type: 'auth', email: usernameBase64 });
             }
         };
 

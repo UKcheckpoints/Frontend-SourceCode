@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { CheckpointManagementContent } from '@/components/layout/admin/CheckPointSection'
 import UserDashboard from '@/components/layout/admin/UserSection'
-import { Users, MapPin, Menu, X, LogOut, ChevronLeft } from 'lucide-react'
+import { Users, MapPin, Menu, X, LogOut, ChevronLeft, Map } from 'lucide-react'
 import { Button } from "@/components/ui/Button"
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery"
 import { cn } from "@/lib/utils/cn"
@@ -23,7 +23,7 @@ export default function AdminDashboard() {
     const isMobile = useMediaQuery("(max-width: 768px)")
     const router = useRouter();
 
-    const { isLoadingState, isValid } = useJwtValidator();
+    const { isLoadingState, isValid, userData } = useJwtValidator();
 
     if (isLoadingState) {
         return <LoadingScreen status="ready" />
@@ -32,7 +32,12 @@ export default function AdminDashboard() {
     if (!isValid) {
         router.push('/login')
         return <LoadingScreen status="ready" />
+    } else if (userData?.role !== "SUPER_ADMIN" && userData?.role !== "ADMIN") {
+        //   router.push('/map')
+        //    return <LoadingScreen status="ready" />
     }
+
+    const isSuperAdmin = userData?.role === "SUPER_ADMIN";
 
     const NavButton: React.FC<NavButtonProps> = ({ icon: Icon, label, section, collapsed }) => (
         <Button
@@ -45,8 +50,12 @@ export default function AdminDashboard() {
                     : 'text-white hover:bg-sky-700'
             )}
             onClick={() => {
-                setActiveSection(section)
-                if (isMobile) setSidebarOpen(false)
+                if (section === 'map') {
+                    router.push('/map')
+                } else {
+                    setActiveSection(section)
+                    if (isMobile) setSidebarOpen(false)
+                }
             }}
         >
             <Icon className={cn("h-4 w-4", !collapsed && "mr-2")} />
@@ -101,6 +110,12 @@ export default function AdminDashboard() {
                         section="checkpoints"
                         collapsed={!sidebarOpen && !isMobile}
                     />
+                    <NavButton
+                        icon={Map}
+                        label="Map"
+                        section="map"
+                        collapsed={!sidebarOpen && !isMobile}
+                    />
                 </div>
 
                 <div className="flex-grow" />
@@ -137,7 +152,7 @@ export default function AdminDashboard() {
                 {/* Dashboard content */}
                 <div className="flex-grow p-6 overflow-auto">
                     {activeSection === 'users' && <UserDashboard isSuperAdmin={true} />}
-                    {activeSection === 'checkpoints' && <CheckpointManagementContent isSuperAdmin={true} />}
+                    {activeSection === 'checkpoints' && <CheckpointManagementContent isSuperAdmin={isSuperAdmin} />}
                 </div>
             </main>
         </div>

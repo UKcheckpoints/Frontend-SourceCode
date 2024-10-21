@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState, useMemo } from 'react'
+import axios from 'axios'
 import { Button } from "@/components/ui/Button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
@@ -13,65 +14,54 @@ import { Checkbox } from "@/components/ui/Checkbox"
 import { Label } from "@/components/ui/Label"
 import { Textarea } from "@/components/ui/Textarea"
 
-type User = {
-    id: string
+type UserEntity = {
+    id: number
     username: string
     email: string
-    subscription: string
-    registerDate: string
-    status: 'Free' | 'Friend' | 'Admin' | 'SuperAdmin'
+    role: string
+    createdAt: string
+    updatedAt: string
+    isSubscribed: boolean
+    stripeCustomer?: string
+    stripeSubscribedDate?: string
+    freeEnd: boolean
 }
 
 type Props = {
     isSuperAdmin: boolean
 }
 
-// Mock data (20 users as provided in the original code)
-const mockUsers: User[] = [
-    {
-        id: '1',
-        username: 'alice',
-        email: 'user1@example.com',
-        subscription: 'Friend',
-        registerDate: '2015-02-03',
-        status: 'Admin'
-    },
-    {
-        id: '2',
-        username: 'bob',
-        email: 'user2@example.com',
-        subscription: 'Free',
-        registerDate: '2023-10-08',
-        status: 'Admin'
-    },
-    {
-        id: '3',
-        username: 'charlie',
-        email: 'user3@example.com',
-        subscription: 'Friend',
-        registerDate: '2022-08-21',
-        status: 'Friend'
-    }
-];
-
-function UserDashboardContent({ isSuperAdmin }: Props) {
+export default function UserDashboard({ isSuperAdmin }: Props) {
+    const [users, setUsers] = useState<UserEntity[]>([])
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [usersPerPage, setUsersPerPage] = useState(10)
-    const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+    const [selectedUsers, setSelectedUsers] = useState<number[]>([])
     const [notificationMessage, setNotificationMessage] = useState('')
-    const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; userId: string | null }>({
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; userId: number | null }>({
         isOpen: false,
         userId: null
-    });
+    })
 
+    useEffect(() => {
+        fetchUsers()
+    }, [])
+
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`, { withCredentials: true })
+            setUsers(response.data)
+        } catch (error) {
+            console.error('Error fetching users:', error)
+        }
+    }
 
     const filteredUsers = useMemo(() => {
-        return mockUsers.filter(user =>
+        return users.filter(user =>
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
         )
-    }, [searchTerm])
+    }, [users, searchTerm])
 
     const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
 
@@ -85,40 +75,107 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
         return filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
     }, [currentPage, usersPerPage, filteredUsers])
 
-    const handleStatusChange = async (userId: string, newStatus: User['status']) => {
-        console.log(`Updating user ${userId} status to ${newStatus}`)
-    }
+    const handleStatusChange = async (userId: number, newRole: string) => {
+        console.log(`Updating user ${userId} role to ${newRole}`);
 
-    const handleDeleteUser = (userId: string) => {
-        setDeleteConfirmation({ isOpen: true, userId });
+        try {
+            const response = await axios.put(
+                `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}/role`,
+                { role: newRole },
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                console.log('User role updated successfully');
+                return response.data.user;
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        console.error('Unauthorized: Admin access required');
+                    } else if (error.response.status === 404) {
+                        console.error('User not found');
+                    } else {
+                        console.error('Error updating user role:', error.response.data.message);
+                    }
+                } else {
+                    console.error('Network error occurred');
+                }
+            } else {
+                console.error('An unexpected error occurred:', error);
+            }
+            throw error;
+        }
     };
 
-    const handleUserSelection = (userId: string) => {
+    const handleDeleteUser = (userId: number) => {
+        setDeleteConfirmation({ isOpen: true, userId })
+    }
+
+    const handleUserSelection = (userId: number) => {
         setSelectedUsers(prev =>
             prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
         )
     }
 
-    const removeUser = (userId: string) => {
-        setSelectedUsers(prev => prev.filter(id => id !== userId));
-    };
+    const removeUser = (userId: number) => {
+        setSelectedUsers(prev => prev.filter(id => id !== userId))
+    }
 
     const handleNotifyUsers = () => {
         console.log(`Notifying users: ${selectedUsers.join(', ')}`)
         console.log(`Message: ${notificationMessage}`)
-        // Reset selection and message after notifying
+        // Implement API call to send notifications
         setSelectedUsers([])
         setNotificationMessage('')
     }
 
-    const confirmDeleteUser = () => {
+    const confirmDeleteUser = async () => {
         if (deleteConfirmation.userId) {
             console.log(`Deleting user ${deleteConfirmation.userId} from the database`);
-            // Here you would typically call an API to delete the user
+
+            try {
+                const response = await axios.delete(
+                    `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${deleteConfirmation.userId}`,
+                    {
+                        withCredentials: true,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (response.status === 200) {
+                    console.log('User deleted successfully');
+                    setUsers(prevUsers => prevUsers.filter(user => user.id !== deleteConfirmation.userId));
+                    setSelectedUsers(prevSelected => prevSelected.filter(id => id !== deleteConfirmation.userId));
+                }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    if (error.response) {
+                        if (error.response.status === 401) {
+                            console.error('Unauthorized: Admin access required');
+                        } else if (error.response.status === 404) {
+                            console.error('User not found');
+                        } else {
+                            console.error('Error deleting user:', error.response.data.message);
+                        }
+                    } else {
+                        console.error('Network error occurred');
+                    }
+                } else {
+                    console.error('An unexpected error occurred:', error);
+                }
+            }
         }
         setDeleteConfirmation({ isOpen: false, userId: null });
     };
-
 
     return (
         <Card className="w-full bg-sky-50 shadow-lg">
@@ -172,7 +229,7 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
                                         </Label>
                                         <div className="flex flex-wrap gap-2">
                                             {selectedUsers.map(userId => {
-                                                const user = mockUsers.find(u => u.id === userId)
+                                                const user = users.find(u => u.id === userId)
                                                 return user ? (
                                                     <Badge
                                                         key={userId}
@@ -233,9 +290,9 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
                                 )}
                                 <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">User</TableHead>
                                 <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">Email</TableHead>
-                                <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">Subscription</TableHead>
+                                <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">Role</TableHead>
                                 <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">Registered</TableHead>
-                                <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">Status</TableHead>
+                                <TableHead className="px-6 py-3 text-left text-xs font-medium text-sky-700 uppercase tracking-wider">Subscription</TableHead>
                                 {isSuperAdmin && <TableHead className="px-6 py-3 text-right text-xs font-medium text-sky-700 uppercase tracking-wider">Actions</TableHead>}
                             </TableRow>
                         </TableHeader>
@@ -263,38 +320,38 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
                                         </div>
                                     </TableCell>
                                     <TableCell className="px-6 py-4 whitespace-nowrap">
-                                        <Badge variant="secondary" className="bg-sky-100 text-sky-800 px-2 py-1 text-xs rounded-full">
-                                            {user.subscription}
-                                        </Badge>
+                                        {isSuperAdmin ? (
+                                            <Select
+                                                onValueChange={(value) => handleStatusChange(user.id, value)}
+                                                defaultValue={user.role}
+                                            >
+                                                <SelectTrigger className="w-[140px] bg-white border-sky-200 text-sky-700">
+                                                    <SelectValue placeholder="Select role" />
+                                                </SelectTrigger>
+                                                <SelectContent className='bg-sky-100'>
+                                                    <SelectItem value="USER">User</SelectItem>
+                                                    <SelectItem value="FRIEND">Friend</SelectItem>
+                                                    <SelectItem value="ADMIN">Admin</SelectItem>
+                                                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <Badge variant="secondary" className="bg-sky-100 text-sky-800 px-2 py-1 text-xs rounded-full">
+                                                {user.role}
+                                            </Badge>
+                                        )}
                                     </TableCell>
                                     <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-sky-700">
                                         <div className="flex items-center">
                                             <Calendar className="h-4 w-4 text-sky-400 mr-2" />
-                                            <span>{user.registerDate}</span>
+                                            <span>{new Date(user.createdAt).toLocaleDateString()}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="px-6 py-4 whitespace-nowrap">
-                                        {isSuperAdmin ? (
-                                            <Select
-                                                onValueChange={(value) => handleStatusChange(user.id, value as User['status'])}
-                                                defaultValue={user.status}
-                                            >
-                                                <SelectTrigger className="w-[140px] bg-white border-sky-200 text-sky-700">
-                                                    <SelectValue placeholder="Select status" />
-                                                </SelectTrigger>
-                                                <SelectContent className='bg-sky-100'>
-                                                    <SelectItem value="Free">Free</SelectItem>
-                                                    <SelectItem value="Friend">Friend</SelectItem>
-                                                    <SelectItem value="Admin">Admin</SelectItem>
-                                                    <SelectItem value="SuperAdmin">Super Admin</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        ) : (
-                                            <div className="flex items-center">
-                                                <Crown className="h-4 w-4 text-yellow-500 mr-2" />
-                                                <span className="text-sm text-sky-700">{user.status}</span>
-                                            </div>
-                                        )}
+                                        <div className="flex items-center">
+                                            <Crown className="h-4 w-4 text-yellow-500 mr-2" />
+                                            <span className="text-sm text-sky-700">{user.isSubscribed ? 'Subscribed' : 'Free'}</span>
+                                        </div>
                                     </TableCell>
                                     {isSuperAdmin && (
                                         <TableCell className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -329,6 +386,7 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                             <Button
                                 key={page}
+
                                 variant={currentPage === page ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => setCurrentPage(page)}
@@ -342,7 +400,6 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                             disabled={currentPage === totalPages}
                         >
-
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
@@ -376,8 +433,4 @@ function UserDashboardContent({ isSuperAdmin }: Props) {
             </Dialog>
         </Card>
     )
-}
-
-export default function UserDashboard(props: Props) {
-    return <UserDashboardContent {...props} />
 }
